@@ -1,10 +1,10 @@
 from flask import render_template, session, redirect, url_for, request, escape
 from simplepam import authenticate
+from .Uci import Uci
 from app import app
-
 from app.forms import LoginForm, PrivateNetworkParameters
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
     simpleForm = PrivateNetworkParameters()
     simpleForm.ssid.data = 'prueba_de_valores_por_defecto'
@@ -16,6 +16,9 @@ def index():
             vpn_config = simpleForm.vpn_config.data
 
             # Hacer cosas con las configuraciones provistas
+            u = Uci()
+            r = u.get('network', 'lan', 'type')
+            print(r)
 
         return render_template('simpleForm.html', form=simpleForm)
     return redirect(url_for('login'))
