@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Public Network Settings</h1>
+  <form method="post" enctype="multipart/form-data" action="">
+    {{ form.csrf_token }}
+
+    {{% for wlan in wlan_list %}}
+
+    <p>
+        WLAN: {{wlan.ssid}}
+    </p>
+
+
+    {{% endfor %}}
+
+    <p>
+      <input type="submit" value="Submit">
+    </p>
+  </form>
+{% endblock %}
