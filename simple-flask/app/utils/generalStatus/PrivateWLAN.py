@@ -1,0 +1,2 @@
+class PrivateWLAN:
+    pass

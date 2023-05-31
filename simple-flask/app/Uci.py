@@ -1,4 +1,5 @@
-from subprocess import run
+from subprocess import run, Popen
+from shlex import split
 
 
 class Uci:
@@ -13,6 +14,8 @@ class Uci:
         return r.stdout
 
     def hardCommit(self):
-        r = run("reboot", shell=True, capture_output=True, text=True)
+        # r = run("reboot && /etc/init.d/flask_app stop", shell=True, capture_output=True, text=True)
+        Popen(split("/sbin/reboot"))
+        Popen(split("/etc/init.d/flask_app stop"))
         return
 

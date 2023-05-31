@@ -12,7 +12,8 @@ class PrivateNetworkParameters(FlaskForm):
     key = PasswordField('New password', validators=[])
 
 class PublicNetworkParameters(FlaskForm):
-    pass
+    ssid = StringField('SSID', validators=[DataRequired()])
+    key = PasswordField('Password', validators=[])
 
 class VpnParameters(FlaskForm):
     file = FileField("OpenVPN configuration file")

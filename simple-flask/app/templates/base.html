@@ -6,7 +6,14 @@
 <body>
     <!-- Navbar -->
     <nav>
+        <a href="{{url_for('dashboard')}}">Dashboard</a>
+        <a href="{{url_for('index')}}">Red privada</a>
+        <a href="{{url_for('pubnet')}}">Red publica</a>
+        <a href="{{url_for('vpn')}}">VPN</a>
+        
+
         <a href="{{url_for('restart')}}">REINICIAR</a>
+        <a href="{{url_for('logout')}}">LOGOUT</a>
     </nav>
 
     <!-- Content -->
