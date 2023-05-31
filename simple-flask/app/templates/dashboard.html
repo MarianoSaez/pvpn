@@ -2,8 +2,25 @@
 
 {% block content %}
 <h1>General router parameters</h1>
+<script src="{{ url_for('static', filename='jquery-3.7.0.slim.min.js') }}"></script>
 <span>
-    <h3>Internet access</h3>
+    <script>
+        $(document).ready(function() {
+            setInterval(function() {
+                updateStatus();
+            }, 5000);  // Refresh every 5 seconds
+        });
+
+        function updateStatus() {
+            let response = fetch("/internet-status")
+                .then(e => e.text())
+                .then(text => {
+                    document.getElementById('status').innerText = text;
+                })
+        }
+    </script>
+        <h3>Internet access</h3>
+        <p>Status: <span id="status"></span></p>
 </span>
 <span>
     <h3>Private WLAN</h3>

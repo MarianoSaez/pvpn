@@ -2,12 +2,12 @@ from flask import render_template, redirect, url_for, request
 from flask_login import LoginManager, login_user, login_required, logout_user
 from simplepam import authenticate
 
-from app.utils.wireless.wireless import scan
+from app.utils.wireless import scan
 from .Uci import Uci
 from app import app
 from app.forms import LoginForm, PrivateNetworkParameters, VpnParameters, PublicNetworkParameters
 from .models import User
-from subprocess import run
+from subprocess import run, check_output, CalledProcessError
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -48,6 +48,15 @@ def logout():
 @login_required
 def dashboard():
     return render_template("dashboard.html")
+
+
+@app.route("/internet-status")
+def internetStatus():
+    try:
+        check_output(['ping', '-c', '1', 'google.com'])
+        return 'Online'
+    except CalledProcessError:
+        return 'Offline'
 
 
 # Red privada
