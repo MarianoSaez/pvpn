@@ -1,34 +1,131 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>General router parameters</h1>
-<script src="{{ url_for('static', filename='jquery-3.7.0.slim.min.js') }}"></script>
-<span>
-    <script>
-        $(document).ready(function() {
-            setInterval(function() {
-                updateStatus();
-            }, 5000);  // Refresh every 5 seconds
-        });
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">General router parameters</h3>
+                <script src="/static/js/jquery-3.7.0.slim.min.js"></script>
+                <span>
+                    <script>
+                        $(document).ready(function () {
+                            setInterval(function () {
+                                updateStatus();
+                            }, 5000);  // Refresh every 5 seconds
+                        });
 
-        function updateStatus() {
-            let response = fetch("/internet-status")
-                .then(e => e.text())
-                .then(text => {
-                    document.getElementById('status').innerText = text;
-                })
-        }
-    </script>
-        <h3>Internet access</h3>
-        <p>Status: <span id="status"></span></p>
-</span>
-<span>
-    <h3>Private WLAN</h3>
-</span>
-<span>
-    <h3>Public WLAN</h3>
-</span>
-<span>
-    <h3>VPN information</h3>
-</span>
+                        function updateStatus() {
+                            let response = fetch("/internet-status")
+                                .then(e => e.text())
+                                .then(text => {
+                                    document.getElementById('status').innerText = text;
+                                });
+                        }
+                    </script>
+                    <p>Status: <span id="status"></span></p>
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">Public WLAN</h3>
+                <span>
+                    <script>
+                        $(document).ready(function () {
+                            setInterval(function () {
+                                getWLANDetails();
+                            }, 5000);  // Refresh every 5 seconds
+                        });
+
+                        function getWLANDetails() {
+                            let response = fetch("/pubwlan-status")
+                                .then(e => e.json())
+                                .then(data => {
+                                    document.getElementById('pubwlan-status').innerText = data.pubwlanstatus;
+                                    document.getElementById('pubwlan-ssid').innerText = data.pubwlanssid;
+                                });
+                        }
+                    </script>
+                    <p>Status: <span id="pubwlan-status"></span></p>
+                    <p>Network SSID: <span id="pubwlan-ssid"></span></p>
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">VPN information</h3>
+                <span>
+                    <script>
+                        $(document).ready(function () {
+                            setInterval(function () {
+                                getIPDetails();
+                            }, 5000);  // Refresh every 5 seconds
+                        });
+
+                        function getIPDetails() {
+                            let response = fetch("/vpn-status")
+                                .then(e => e.json())
+                                .then(data => {
+                                    document.getElementById('vpn-status').innerText = data.vpnstatus;
+                                    document.getElementById('public-ip').innerText = data.ip;
+                                    document.getElementById('country').innerText = data.country;
+                                });
+                        }
+                    </script>
+                    <p>Status: <span id="vpn-status"></span></p>
+                    <p>IP: <span id="public-ip"></span></p>
+                    <p>Country: <span id="country"></span></p>
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">Private WLAN</h3>
+                <span>
+                    <script>
+                        $(document).ready(function () {
+                            setInterval(function () {
+                                getPrivDetails();
+                            }, 5000);  // Refresh every 5 seconds
+                        });
+
+                        function getPrivDetails() {
+                            fetch('/privwlan-status')
+                            .then(response => response.json())
+                            .then(data => {
+                                document.getElementById("privwlan-ssid").innerText = data.privwlanssid;
+                                document.getElementById("privwlan-status").innerText = data.privwlanstatus;
+
+                                const privWlanList = document.getElementById('priv-wlan-list');
+                                privWlanList.innerHTML = "";
+
+                                const ul = document.createElement('ul');
+                                data.clients.forEach(item => {
+                                    const li = document.createElement('li');
+                                    li.innerText = item;
+                                    ul.appendChild(li);
+                                });
+
+                                privWlanList.appendChild(ul);
+                            });
+                        }
+                    </script>
+                    <p>Status: <span id="privwlan-status"></span></p>
+                    <p>Network SSID: <span id="privwlan-ssid"></span></p>
+                    <p>Clients:</p>
+                    <div id="priv-wlan-list">
+                        <ul></ul>
+                    </div>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

@@ -1,8 +1,10 @@
+from time import sleep
 from flask import render_template, redirect, url_for, request
 from flask_login import LoginManager, login_user, login_required, logout_user
 from simplepam import authenticate
+from app.utils.vpn import getVPNDetails
 
-from app.utils.wireless import scan
+from app.utils.wireless import scan, getPubWLANDetails, getPrivWLANSDetails
 from .Uci import Uci
 from app import app
 from app.forms import LoginForm, PrivateNetworkParameters, VpnParameters, PublicNetworkParameters
@@ -59,6 +61,19 @@ def internetStatus():
         return 'Offline'
 
 
+@app.route("/vpn-status")
+def vpnStatus():
+    return getVPNDetails()
+
+@app.route("/pubwlan-status")
+def pubwlanStatus():
+    return getPubWLANDetails()
+
+@app.route("/privwlan-status")
+def privwlanStatus():
+    return getPrivWLANSDetails()
+
+
 # Red privada
 
 @app.route('/privnet', methods=['GET', 'POST'])
@@ -80,6 +95,7 @@ def index():
 @app.route('/pubnet', methods=["GET", "POST"])
 @login_required
 def pubnet():
+    sleep(5)
     pubForm = PublicNetworkParameters()
     wlan_list = scan()
     if request.method == "POST":
