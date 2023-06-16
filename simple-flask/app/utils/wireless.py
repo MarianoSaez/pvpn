@@ -10,10 +10,22 @@ class WLAN:
         self.security = security
         self.strength = strength
 
+    def to_dict(self) -> dict:
+        return {
+            "ssid": self.ssid,
+            "security": self.security,
+            "strength": self.strength
+        }
+
 
 def scan() -> list[WLAN]:
-    raw_scan = run("iw wlan1 scan", shell=True, capture_output=True, text=True).stdout
-    raw_wlan_list = raw_scan.split("BSS")
+    raw_scan = run("iw wlan1 scan", shell=True, capture_output=True, text=True)
+    if raw_scan.returncode != 0:
+        run("uci delete wireless.@wifi-iface[2].ssid", shell=True, capture_output=True, text=True)
+        run("uci delete wireless.@wifi-iface[2].key", shell=True, capture_output=True, text=True)
+        run("uci commit wireless", shell=True, capture_output=True, text=True)
+        
+    raw_wlan_list = raw_scan.stdout.split("BSS")
     wlan_list = []
     for raw_wlan in raw_wlan_list:
         ssid = search(r"SSID:(.+)", raw_wlan)

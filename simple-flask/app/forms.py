@@ -12,6 +12,7 @@ class PrivateNetworkParameters(FlaskForm):
     key = PasswordField('New password', validators=[])
 
 class PublicNetworkParameters(FlaskForm):
+    # ssid = SelectField('SSID')
     ssid = StringField('SSID', validators=[DataRequired()])
     key = PasswordField('Password', validators=[])
 

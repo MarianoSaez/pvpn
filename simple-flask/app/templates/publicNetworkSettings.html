@@ -1,32 +1,97 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<script src="/static/js/jquery-3.7.0.min.js"></script>
+<script>
+  function updateWlanList() {
+    // Show the buffering symbol
+    const loadingSpinner = document.getElementById('loading-spinner');
+    loadingSpinner.style.display = 'flex';
+
+
+    fetch('/pubnet/scan')
+      .then(response => response.json())
+      .then(data => {
+        const wlanListContainer = document.getElementById('wlan-list');
+        wlanListContainer.innerHTML = ''; // Clear previous content
+
+        // Loop through the WLAN list and create HTML elements
+        data.forEach(wlan => {
+          const wlanItem = document.createElement('div');
+
+          // Create Connect button
+          const connectButton = document.createElement('button');
+          connectButton.textContent = wlan.ssid;
+          connectButton.classList.add('btn', 'btn-primary', 'btn-block', 'my-3'); // Add Bootstrap classes
+          connectButton.style.maxWidth = '300px'; // Set maximum width using inline CSS
+          wlanItem.appendChild(connectButton);
+
+          // Add event listener to the Connect button
+          connectButton.addEventListener('click', e => {
+            e.preventDefault();
+            openModal(wlan.ssid);
+          });
+
+          wlanListContainer.appendChild(wlanItem);
+
+        });
+        // Hide the buffering symbol after the fetch operation is complete
+        loadingSpinner.style.display = 'none';
+      });
+  }
+
+  function openModal(ssid) {
+    // Set the SSID value in the modal form
+    document.getElementById('modal-ssid').value = ssid;
+
+    // Show the modal
+    const modal = document.getElementById('modal');
+    modal.style.display = 'block';
+  }
+
+  function closeModal() {
+    // Hide the modal
+    const modal = document.getElementById('modal');
+    modal.style.display = 'none';
+  }
+
+
+  // Call the updateWlanList function initially and every 5 seconds
+  $(document).ready(function () {
+    updateWlanList();
+    setInterval(function () {
+      updateWlanList();
+    }, 10000);  // Refresh every 10 seconds
+  });
+
+</script>
+
 <h1>Public Network Settings</h1>
 
-{% for wlan in wlan_list %}
+<div id="loading-spinner" class="text-center">
+  <div class="spinner"></div>
+</div>
+
 <form method="post" enctype="multipart/form-data" action="{{ url_for('pubnet') }}">
   {{ form.csrf_token }}
+  <!-- Modal -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h2>Connect to WLAN</h2>
+      <form>
+        <label for="modal-ssid">SSID:</label>
+        <input type="text" id="modal-ssid" name="ssid" readonly>
 
+        <label for="modal-password">Password:</label>
+        <input type="password" id="modal-password" name="password">
 
-  <p>
-    {{ form.ssid.label }}<br>
-    <input type="text" id="ssid" name="ssid" value="{{ wlan.ssid }}"><br>
-  </p>
-
-  <p>
-    SIGNAL: {{ wlan.strength }}
-  </p>
-  <p>
-    {{ form.key.label }}<br>
-    {{ form.key(size=40) }}<br>
-    {% for error in form.key.errors %}
-    <span style="color: red;">[{{ error }}]</span><br>
-    {% endfor %}
-  </p>
-  <input type="submit" value="Conectar">
+        <input type="submit" value="Connect">
+      </form>
+    </div>
+  </div>
+  <div id="wlan-list">
+  </div>
 </form>
-<br>
-
-{% endfor %}
 
 {% endblock %}

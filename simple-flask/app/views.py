@@ -1,7 +1,8 @@
 from time import sleep
-from flask import render_template, redirect, url_for, request
+from flask import render_template, redirect, url_for, request, jsonify
 from flask_login import LoginManager, login_user, login_required, logout_user
 from simplepam import authenticate
+from app.utils.general import getGeneralStatus
 from app.utils.vpn import getVPNDetails
 
 from app.utils.wireless import scan, getPubWLANDetails, getPrivWLANSDetails
@@ -9,7 +10,7 @@ from .Uci import Uci
 from app import app
 from app.forms import LoginForm, PrivateNetworkParameters, VpnParameters, PublicNetworkParameters
 from .models import User
-from subprocess import run, check_output, CalledProcessError
+from subprocess import run
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -31,7 +32,7 @@ def login():
         if authenticate(str(username), str(password)):
             user = User(username)
             login_user(user)
-            return redirect(url_for('index'))
+            return redirect(url_for('dashboard'))
         else:
             return redirect(url_for('login'))
 
@@ -41,7 +42,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('index'))
+    return redirect(url_for('dashboard'))
 
 
 # Dashboard
@@ -51,25 +52,23 @@ def logout():
 def dashboard():
     return render_template("dashboard.html")
 
-
 @app.route("/internet-status")
+@login_required
 def internetStatus():
-    try:
-        check_output(['ping', '-c', '1', 'google.com'])
-        return 'Online'
-    except CalledProcessError:
-        return 'Offline'
-
+    return getGeneralStatus()
 
 @app.route("/vpn-status")
+@login_required
 def vpnStatus():
     return getVPNDetails()
 
 @app.route("/pubwlan-status")
+@login_required
 def pubwlanStatus():
     return getPubWLANDetails()
 
 @app.route("/privwlan-status")
+@login_required
 def privwlanStatus():
     return getPrivWLANSDetails()
 
@@ -92,18 +91,24 @@ def index():
 
 # Red publica
 
+@app.route("/pubnet/scan")
+@login_required
+def pubnetScan():
+    wlan_list = [wlan.to_dict() for wlan in scan()]
+    return jsonify(wlan_list)
+
+
 @app.route('/pubnet', methods=["GET", "POST"])
 @login_required
 def pubnet():
-    sleep(5)
     pubForm = PublicNetworkParameters()
-    wlan_list = scan()
     if request.method == "POST":
         u = Uci()
         u.set("wireless", "wifinet2", "ssid", request.form["ssid"])
-        u.set("wireless", "wifinet2", "key", request.form["key"])
-        u.hardCommit()
-    return render_template('publicNetworkSettings.html', form=pubForm, wlan_list=wlan_list)
+        u.set("wireless", "wifinet2", "key", request.form["password"])
+        
+        return redirect(url_for('dashboard'))
+    return render_template('publicNetworkSettings.html', form=pubForm)
 
 
 # VPN
@@ -140,4 +145,4 @@ def vpn():
 @login_required
 def restart():
     Uci().hardCommit()
-    return redirect(url_for('index'))
+    return redirect(url_for('dashboard'))
